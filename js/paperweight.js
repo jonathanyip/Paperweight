@@ -12,9 +12,11 @@ requirejs.config({
 });
 
 // Load the game states and what not
-require(["core/game", "stages/boot"], function(game, boot) {
+require(["core/game", "stages/boot", 'stages/world'], function(game, Boot, World) {
     "use strict";
-    
-    game.state.add("Boot", boot);
+
+    game.state.add("Boot", Boot);
+    game.state.add("World", World);
+
     game.state.start("Boot");
 });
