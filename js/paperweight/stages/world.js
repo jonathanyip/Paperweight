@@ -17,59 +17,60 @@ define(["core/game", "core/config"], function(game, Config) {
             game.load.image("player", "resources/sprites/star.png")
         },
         create: function() {
-            this.background = game.add.tileSprite(0, 0, Config.gameWidth, Config.gameHeight, "background");
-            this.player = game.add.sprite(0, 0, "player");
+            this.background = game.add.tileSprite(0, 0, Config.GAME_WIDTH, Config.GAME_HEIGHT, "background");
+            this.player = game.add.sprite(32, 32, "player");
 
+            // Set some player properties
             game.physics.arcade.enable(this.player);
             game.camera.follow(this.player);
 
             this.player.body.collideWorldBounds = true;
+            this.player.body.bounce.set(Config.PLAYER_BOUNCE);
+            this.player.body.maxVelocity.set(Config.PLAYER_MAX_VELOCITY);
 
             this.cursor = game.input.keyboard.createCursorKeys();
         },
         update: function() {
-            var accl = 300;
+            this.player.body.acceleration.set(0);
+            this.player.body.drag.set(Config.PLAYER_DRAG);
 
             if(this.cursor.left.isDown) {
-                var dir = -1 * Math.sign(this.player.body.acceleration.x * this.player.body.velocity.x);
-                if(dir == 1) {
-                    this.player.body.velocity.x = 0;
+                if(this.player.body.velocity.x > 0) {
+                    this.player.body.velocity.x *= Config.PLAYER_REVERSE_DAMP_FACTOR;
+                    console.log("OpLeft");
                 }
 
-                this.player.body.acceleration.x = -accl;
-            } else if(this.cursor.right.isDown) {
-                var dir = -1 * Math.sign(this.player.body.acceleration.x * this.player.body.velocity.x);
-                if(dir == 1) {
-                    this.player.body.velocity.x = 0;
-                }
-                this.player.body.acceleration.x = accl;
-            } else {
-                // Get the opposite sign
-                var sign = -1 * Math.sign(this.player.body.velocity.x);
-                this.player.body.acceleration.x = sign * accl;
+                this.player.body.acceleration.x -= Config.PLAYER_ACCELERATION;
             }
+            if(this.cursor.right.isDown) {
+                if(this.player.body.velocity.x < 0) {
+                    this.player.body.velocity.x *= Config.PLAYER_REVERSE_DAMP_FACTOR;
+                    console.log("OpRight");
+                }
 
+                this.player.body.acceleration.x += Config.PLAYER_ACCELERATION;
+            }
             if(this.cursor.up.isDown) {
-                // If opposite direction, set velocity to 0
-                var dir = -1 * Math.sign(this.player.body.acceleration.y * this.player.body.velocity.y);
-                if(dir == 1) {
-                    this.player.body.velocity.y = 0;
+                if(this.player.body.velocity.y > 0) {
+                    this.player.body.velocity.y *= Config.PLAYER_REVERSE_DAMP_FACTOR;
+                    console.log("OpUp");
                 }
 
-                this.player.body.acceleration.y = -accl;
-            } else if(this.cursor.down.isDown) {
-                // If opposite direction, set velocity to 0
-                var dir = -1 * Math.sign(this.player.body.acceleration.y * this.player.body.velocity.y);
-                if(dir == 1) {
-                    this.player.body.velocity.y = 0;
-                }
-
-                this.player.body.acceleration.y = accl;
-            } else {
-                // Get the opposite sign
-                var sign = -1 * Math.sign(this.player.body.velocity.y);
-                this.player.body.acceleration.y = sign * accl;
+                this.player.body.acceleration.y -= Config.PLAYER_ACCELERATION;
             }
+            if(this.cursor.down.isDown) {
+                if(this.player.body.velocity.y < 0) {
+                    this.player.body.velocity.y *= Config.PLAYER_REVERSE_DAMP_FACTOR;
+                    console.log("OpDown");
+                }
+
+                this.player.body.acceleration.y += Config.PLAYER_ACCELERATION;
+            }
+        },
+        render: function() {
+            game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 32);
+            game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 64);
+            game.debug.text("Drag: x=" + this.player.body.drag.x + "; y=" + this.player.body.drag.y, 32, 96);
         }
     };
 

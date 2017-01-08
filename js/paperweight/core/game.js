@@ -8,6 +8,6 @@
 define(["core/config", "lib/phaser"], function(Config) {
     "use strict";
 
-    var game = new Phaser.Game(Config.gameWidth, Config.gameHeight, Phaser.AUTO);
+    var game = new Phaser.Game(Config.GAME_WIDTH, Config.GAME_HEIGHT, Phaser.AUTO);
     return game;
 });
