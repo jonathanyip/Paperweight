@@ -28,13 +28,18 @@ define(["core/game", "core/config"], function(game, Config) {
             this.player.body.bounce.set(Config.PLAYER_BOUNCE);
             this.player.body.maxVelocity.set(Config.PLAYER_MAX_VELOCITY);
 
-            this.cursor = game.input.keyboard.createCursorKeys();
+            // Add arrow keys and wasd
+            this.cursor = game.input.keyboard.addKeys({
+                'up': Phaser.KeyCode.UP, 'down': Phaser.KeyCode.DOWN, 'left': Phaser.KeyCode.LEFT, 'right': Phaser.KeyCode.RIGHT,
+                'w': Phaser.Keyboard.W, 'a': Phaser.Keyboard.A, 's': Phaser.Keyboard.S, 'd': Phaser.Keyboard.D
+            });
         },
         update: function() {
+            // Handle player movement
             this.player.body.acceleration.set(0);
             this.player.body.drag.set(Config.PLAYER_DRAG);
 
-            if(this.cursor.left.isDown) {
+            if(this.cursor.left.isDown || this.cursor.a.isDown) {
                 if(this.player.body.velocity.x > 0) {
                     this.player.body.velocity.x *= Config.PLAYER_REVERSE_DAMP_FACTOR;
                     console.log("OpLeft");
@@ -42,7 +47,7 @@ define(["core/game", "core/config"], function(game, Config) {
 
                 this.player.body.acceleration.x -= Config.PLAYER_ACCELERATION;
             }
-            if(this.cursor.right.isDown) {
+            if(this.cursor.right.isDown || this.cursor.d.isDown) {
                 if(this.player.body.velocity.x < 0) {
                     this.player.body.velocity.x *= Config.PLAYER_REVERSE_DAMP_FACTOR;
                     console.log("OpRight");
@@ -50,7 +55,7 @@ define(["core/game", "core/config"], function(game, Config) {
 
                 this.player.body.acceleration.x += Config.PLAYER_ACCELERATION;
             }
-            if(this.cursor.up.isDown) {
+            if(this.cursor.up.isDown || this.cursor.w.isDown) {
                 if(this.player.body.velocity.y > 0) {
                     this.player.body.velocity.y *= Config.PLAYER_REVERSE_DAMP_FACTOR;
                     console.log("OpUp");
@@ -58,7 +63,7 @@ define(["core/game", "core/config"], function(game, Config) {
 
                 this.player.body.acceleration.y -= Config.PLAYER_ACCELERATION;
             }
-            if(this.cursor.down.isDown) {
+            if(this.cursor.down.isDown || this.cursor.s.isDown) {
                 if(this.player.body.velocity.y < 0) {
                     this.player.body.velocity.y *= Config.PLAYER_REVERSE_DAMP_FACTOR;
                     console.log("OpDown");
@@ -66,6 +71,9 @@ define(["core/game", "core/config"], function(game, Config) {
 
                 this.player.body.acceleration.y += Config.PLAYER_ACCELERATION;
             }
+
+            // Handle player rotation
+            this.player.rotation = game.physics.arcade.angleToPointer(this.player);
         },
         render: function() {
             game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 32);
