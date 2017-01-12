@@ -8,8 +8,8 @@ define({
     GAME_HEIGHT: 720, // Canvas Height
 
     // Camera setting values
-    CAMERA_MOTION_LERP: 0.05,     // Lerp value for the camera motion. Lower values are smoother, but slower
-    CAMERA_WANDER_DISTANCE: 50,   // How far the camera can go towards the pointer.
+    CAMERA_MOTION_LERP: 0.05,   // Lerp value for the camera motion. Lower values are smoother, but slower
+    CAMERA_WANDER_DISTANCE: 50, // How far the camera can go towards the pointer.
 
     // Player physics values
     PLAYER_MAX_VELOCITY: 350,      // Max velocity that the player can move

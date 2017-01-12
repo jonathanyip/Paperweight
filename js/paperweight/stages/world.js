@@ -95,6 +95,8 @@ define(["core/game", "core/config"], function(game, Config) {
             var pointerDistance = game.physics.arcade.distanceToPointer(this.player);
 
             // Wander is the proportional to how far the pointer is from the player.
+            // In case I forget, this is basically CAMERA_WANDER_DISTANCE * (pointerDistance / (GAME_WIDTH / 2))
+            // But there is some redundancy in the calculations, so I simplified it.
             var wander = Config.CAMERA_WANDER_DISTANCE * pointerDistance * 2;
             var wanderX = (Math.cos(angle) * wander) / Config.GAME_WIDTH;
             var wanderY = (Math.sin(angle) * wander) / Config.GAME_HEIGHT;
