@@ -90,9 +90,14 @@ define(["core/game", "core/config"], function(game, Config) {
             this.background.tilePosition.set(-game.camera.x, -game.camera.y);
 
             // Handle the camera movement
+            // Make the camera go towards the pointer a bit
+            var angle = game.physics.arcade.angleToPointer(this.player);
+            var x = this.player.body.x + (Math.cos(angle) * Config.CAMERA_FOLLOW_DISTANCE);
+            var y = this.player.body.y + (Math.sin(angle) * Config.CAMERA_FOLLOW_DISTANCE);
+
             // Camera motion uses lerp so it is smoother
-            this.cameraPos.x += (this.player.body.x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
-            this.cameraPos.y += (this.player.body.y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
+            this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
+            this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
             game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
         },
         render: function() {
@@ -100,6 +105,7 @@ define(["core/game", "core/config"], function(game, Config) {
             game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 32);
             game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 64);
             game.debug.text("Drag: x=" + this.player.body.drag.x + "; y=" + this.player.body.drag.y, 32, 96);
+            game.debug.text("Angle to pointer: " + game.physics.arcade.angleToPointer(this.player), 32, 128);
         }
     };
 
