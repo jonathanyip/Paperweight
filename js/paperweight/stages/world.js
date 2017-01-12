@@ -92,8 +92,15 @@ define(["core/game", "core/config"], function(game, Config) {
             // Handle the camera movement
             // Make the camera go towards the pointer a bit
             var angle = game.physics.arcade.angleToPointer(this.player);
-            var x = this.player.body.x + (Math.cos(angle) * Config.CAMERA_FOLLOW_DISTANCE);
-            var y = this.player.body.y + (Math.sin(angle) * Config.CAMERA_FOLLOW_DISTANCE);
+            var pointerDistance = game.physics.arcade.distanceToPointer(this.player);
+
+            // Wander is the proportional to how far the pointer is from the player.
+            var wander = Config.CAMERA_WANDER_DISTANCE * pointerDistance * 2;
+            var wanderX = (Math.cos(angle) * wander) / Config.GAME_WIDTH;
+            var wanderY = (Math.sin(angle) * wander) / Config.GAME_HEIGHT;
+
+            var x = this.player.body.x + wanderX;
+            var y = this.player.body.y + wanderY;
 
             // Camera motion uses lerp so it is smoother
             this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
@@ -106,6 +113,7 @@ define(["core/game", "core/config"], function(game, Config) {
             game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 64);
             game.debug.text("Drag: x=" + this.player.body.drag.x + "; y=" + this.player.body.drag.y, 32, 96);
             game.debug.text("Angle to pointer: " + game.physics.arcade.angleToPointer(this.player), 32, 128);
+            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player), 32, 160);
         }
     };
 
