@@ -2,7 +2,7 @@
  * states/boot.js
  * Initialize the game during this boot stage.
  */
-define(["core/game"], function(game) {
+define(["core/game", "core/config"], function(game, Config) {
     "use strict";
 
     var Boot = function() {}
@@ -17,7 +17,7 @@ define(["core/game"], function(game) {
             game.physics.startSystem(Phaser.Physics.ARCADE);
 
             // Set a large world bounds
-            game.world.setBounds(-10, -10, 4000, 4000);
+            game.world.setBounds(-Config.WORLD_PADDING, -Config.WORLD_PADDING, Config.WORLD_WIDTH + (2 * Config.WORLD_PADDING), Config.WORLD_HEIGHT + (2 * Config.WORLD_PADDING));
 
             // Start off in the world map.
             game.state.start("World");

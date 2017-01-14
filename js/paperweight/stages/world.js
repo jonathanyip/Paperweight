@@ -10,23 +10,23 @@ define(["core/game", "core/config"], function(game, Config) {
         this.player = null;
         this.cursor = null;
         this.cameraPos = null;
+        this.borders = null;
     }
 
     World.prototype = {
         preload: function() {
             // Load background images/sprites
             game.load.image("background", "resources/background/paper.jpg");
-            game.load.image("player", "resources/sprites/star.png")
+            game.load.image("player", "resources/sprites/star.png");
         },
         create: function() {
             // Create a player
             this.background = game.add.tileSprite(0, 0, Config.GAME_WIDTH, Config.GAME_HEIGHT, "background");
             this.background.fixedToCamera = true;
-            this.player = game.add.sprite(32, 32, "player");
+            this.player = game.add.sprite(1000, 1000, "player");
 
             // Set some player properties
             game.physics.arcade.enable(this.player);
-            this.player.body.collideWorldBounds = true;
             this.player.body.bounce.set(Config.PLAYER_BOUNCE);
             this.player.body.drag.set(Config.PLAYER_DRAG);
             this.player.body.maxVelocity.set(Config.PLAYER_MAX_VELOCITY);
@@ -39,6 +39,25 @@ define(["core/game", "core/config"], function(game, Config) {
 
             // Setup the camera position
             this.cameraPos = new Phaser.Point(this.player.body.x, this.player.body.y);
+
+            // Set up some borders
+            this.borders = game.add.group();
+            this.borders.enableBody = true;
+
+            var borderTop = this.borders.create(0, 0);
+            var borderLeft = this.borders.create(0, 0);
+            var borderBottom = this.borders.create(0, Config.WORLD_HEIGHT);
+            var borderRight = this.borders.create(Config.WORLD_WIDTH, 0);
+
+            borderTop.body.immovable = true;
+            borderLeft.body.immovable = true;
+            borderBottom.body.immovable = true;
+            borderRight.body.immovable = true;
+
+            borderTop.scale.set(Config.WORLD_WIDTH, 0);
+            borderLeft.scale.set(0, Config.WORLD_HEIGHT);
+            borderBottom.scale.set(Config.WORLD_WIDTH, 0);
+            borderRight.scale.set(0, Config.WORLD_HEIGHT);
         },
         update: function() {
             // Handle player movements
@@ -108,12 +127,15 @@ define(["core/game", "core/config"], function(game, Config) {
             this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
             this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
             game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
+
+            // Handle border collisions
+            game.physics.arcade.collide(this.player, this.borders);
         },
         render: function() {
             // Some debug text...
-            game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 32);
-            game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 64);
-            game.debug.text("Drag: x=" + this.player.body.drag.x + "; y=" + this.player.body.drag.y, 32, 96);
+            game.debug.text("Position: x=" + this.player.body.x + "; y=" + this.player.body.y, 32, 32);
+            game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 64);
+            game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 96);
             game.debug.text("Angle to pointer: " + game.physics.arcade.angleToPointer(this.player), 32, 128);
             game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player), 32, 160);
         }
