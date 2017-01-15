@@ -11,19 +11,25 @@ define(["core/game", "core/config"], function(game, Config) {
         this.cursor = null;
         this.cameraPos = null;
         this.borders = null;
+        this.borderSprites = null;
     }
 
     World.prototype = {
         preload: function() {
             // Load background images/sprites
             game.load.image("background", "resources/background/paper.jpg");
+
+            game.load.image("borderHorizontal", "resources/background/borderHorizontal.png");
+            game.load.image("borderVertical", "resources/background/borderVertical.png");
+            game.load.image("borderCorner", "resources/background/borderCorner.png")
+
             game.load.image("player", "resources/sprites/star.png");
         },
         create: function() {
             // Create a player
             this.background = game.add.tileSprite(0, 0, Config.GAME_WIDTH, Config.GAME_HEIGHT, "background");
             this.background.fixedToCamera = true;
-            this.player = game.add.sprite(1000, 1000, "player");
+            this.player = game.add.sprite(4800, 250, "player");
 
             // Set some player properties
             game.physics.arcade.enable(this.player);
@@ -40,7 +46,28 @@ define(["core/game", "core/config"], function(game, Config) {
             // Setup the camera position
             this.cameraPos = new Phaser.Point(this.player.body.x, this.player.body.y);
 
-            // Set up some borders
+            // Setup the border sprites (the actual images showing up the border)
+            var borderTop = game.add.tileSprite(0, -100, Config.WORLD_WIDTH, 100, "borderHorizontal");
+            var borderLeft = game.add.tileSprite(-100, 0, 100, Config.WORLD_HEIGHT, "borderVertical");
+            var borderBottom = game.add.tileSprite(0, Config.WORLD_HEIGHT, Config.WORLD_WIDTH, 100, "borderHorizontal");
+            var borderRight = game.add.tileSprite(Config.WORLD_WIDTH, 0, 100, Config.WORLD_HEIGHT, "borderVertical");
+
+            var borderTopLeft = game.add.sprite(-100, -100, "borderCorner");
+            var borderBottomLeft = game.add.sprite(-100, Config.WORLD_HEIGHT, "borderCorner");
+            var borderTopRight = game.add.sprite(Config.WORLD_WIDTH, -100, "borderCorner");
+            var borderBottomRight = game.add.sprite(Config.WORLD_WIDTH, Config.WORLD_HEIGHT, "borderCorner");
+
+            this.borderSprites = game.add.group();
+            this.borderSprites.add(borderTop);
+            this.borderSprites.add(borderLeft);
+            this.borderSprites.add(borderBottom);
+            this.borderSprites.add(borderRight);
+            this.borderSprites.add(borderTopLeft);
+            this.borderSprites.add(borderBottomLeft);
+            this.borderSprites.add(borderTopRight);
+            this.borderSprites.add(borderBottomRight);
+
+            // Set up the actual collision border (it's invisible!)
             this.borders = game.add.group();
             this.borders.enableBody = true;
 
