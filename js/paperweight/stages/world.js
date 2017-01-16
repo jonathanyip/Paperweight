@@ -1,18 +1,33 @@
-/*
- * states/world.js
- * Does the world map!
+/**
+ * Does everything necessary for ordinary game functions.
+ * i.e. Manages player movement, cameras, collisions, borders, etc...
+ *
+ * @module stages/world
+ *
+ * @param {number} width - Width of the world.
+ * @param {number} height - Height of the world.
+ * @param {number} x - Starting x position of the player
+ * @param {number} y - Starting y position of the player
  */
-define(["core/game", "core/config"], function(game, Config) {
+define(["core/game", "sprites/player", "core/config"], function(game, Player, Config) {
     "use strict";
 
-    var World = function() {
+    var World = function(width, height, x, y) {
+        this.worldWidth = width;
+        this.worldHeight = height;
+
+        this.initialPlayerX = x;
+        this.initialPlayerY = y;
+
         this.background = null;
-        this.player = null;
-        this.cursor = null;
-        this.cameraPos = null;
-        this.borders = null;
-        this.borderSprites = null;
-    }
+        this.border = {
+            sprites: null,
+            map: null
+        };
+
+        this.bodies = null;
+        this.bullets = null;
+    };
 
     World.prototype = {
         preload: function() {
@@ -21,142 +36,72 @@ define(["core/game", "core/config"], function(game, Config) {
 
             game.load.image("borderHorizontal", "resources/background/borderHorizontal.png");
             game.load.image("borderVertical", "resources/background/borderVertical.png");
-            game.load.image("borderCorner", "resources/background/borderCorner.png")
+            game.load.image("borderCorner", "resources/background/borderCorner.png");
 
             game.load.image("player", "resources/sprites/star.png");
         },
         create: function() {
-            // Create a player
+            // Create the collision groups
+            this.bodies = game.add.group();
+            this.bullets = game.add.group();
+
+            // Set up the world size
+            game.world.setBounds(-Config.WORLD_PADDING, -Config.WORLD_PADDING, this.worldWidth + (2 * Config.WORLD_PADDING), this.worldHeight + (2 * Config.WORLD_PADDING));
+
+            // Setup the background
             this.background = game.add.tileSprite(0, 0, Config.GAME_WIDTH, Config.GAME_HEIGHT, "background");
             this.background.fixedToCamera = true;
-            this.player = game.add.sprite(4800, 250, "player");
 
-            // Set some player properties
-            game.physics.arcade.enable(this.player);
-            this.player.body.bounce.set(Config.PLAYER_BOUNCE);
-            this.player.body.drag.set(Config.PLAYER_DRAG);
-            this.player.body.maxVelocity.set(Config.PLAYER_MAX_VELOCITY);
-
-            // Add arrow keys and WASD
-            this.cursor = game.input.keyboard.addKeys({
-                'up': Phaser.KeyCode.UP, 'down': Phaser.KeyCode.DOWN, 'left': Phaser.KeyCode.LEFT, 'right': Phaser.KeyCode.RIGHT,
-                'W': Phaser.Keyboard.W, 'A': Phaser.Keyboard.A, 'S': Phaser.Keyboard.S, 'D': Phaser.Keyboard.D
-            });
-
-            // Setup the camera position
-            this.cameraPos = new Phaser.Point(this.player.body.x, this.player.body.y);
+            // Create a player
+            this.player = new Player(this.initialPlayerX, this.initialPlayerY, "player");
+            game.add.existing(this.player);
 
             // Setup the border sprites (the actual images showing up the border)
-            var borderTop = game.add.tileSprite(0, -100, Config.WORLD_WIDTH, 100, "borderHorizontal");
-            var borderLeft = game.add.tileSprite(-100, 0, 100, Config.WORLD_HEIGHT, "borderVertical");
-            var borderBottom = game.add.tileSprite(0, Config.WORLD_HEIGHT, Config.WORLD_WIDTH, 100, "borderHorizontal");
-            var borderRight = game.add.tileSprite(Config.WORLD_WIDTH, 0, 100, Config.WORLD_HEIGHT, "borderVertical");
+            var borderTop = game.add.tileSprite(0, -100, this.worldWidth, 100, "borderHorizontal");
+            var borderLeft = game.add.tileSprite(-100, 0, 100, this.worldHeight, "borderVertical");
+            var borderBottom = game.add.tileSprite(0, this.worldHeight, this.worldWidth, 100, "borderHorizontal");
+            var borderRight = game.add.tileSprite(this.worldWidth, 0, 100, this.worldHeight, "borderVertical");
 
             var borderTopLeft = game.add.sprite(-100, -100, "borderCorner");
-            var borderBottomLeft = game.add.sprite(-100, Config.WORLD_HEIGHT, "borderCorner");
-            var borderTopRight = game.add.sprite(Config.WORLD_WIDTH, -100, "borderCorner");
-            var borderBottomRight = game.add.sprite(Config.WORLD_WIDTH, Config.WORLD_HEIGHT, "borderCorner");
+            var borderBottomLeft = game.add.sprite(-100, this.worldHeight, "borderCorner");
+            var borderTopRight = game.add.sprite(this.worldWidth, -100, "borderCorner");
+            var borderBottomRight = game.add.sprite(this.worldWidth, this.worldHeight, "borderCorner");
 
-            this.borderSprites = game.add.group();
-            this.borderSprites.add(borderTop);
-            this.borderSprites.add(borderLeft);
-            this.borderSprites.add(borderBottom);
-            this.borderSprites.add(borderRight);
-            this.borderSprites.add(borderTopLeft);
-            this.borderSprites.add(borderBottomLeft);
-            this.borderSprites.add(borderTopRight);
-            this.borderSprites.add(borderBottomRight);
+            this.border.sprites = game.add.group();
+            this.border.sprites.add(borderTop);
+            this.border.sprites.add(borderLeft);
+            this.border.sprites.add(borderBottom);
+            this.border.sprites.add(borderRight);
+            this.border.sprites.add(borderTopLeft);
+            this.border.sprites.add(borderBottomLeft);
+            this.border.sprites.add(borderTopRight);
+            this.border.sprites.add(borderBottomRight);
 
             // Set up the actual collision border (it's invisible!)
-            this.borders = game.add.group();
-            this.borders.enableBody = true;
+            this.border.map = game.add.group();
+            this.border.map.enableBody = true;
 
-            var borderTop = this.borders.create(0, 0);
-            var borderLeft = this.borders.create(0, 0);
-            var borderBottom = this.borders.create(0, Config.WORLD_HEIGHT);
-            var borderRight = this.borders.create(Config.WORLD_WIDTH, 0);
+            var borderTop = this.border.map.create(0, 0);
+            var borderLeft = this.border.map.create(0, 0);
+            var borderBottom = this.border.map.create(0, this.worldHeight);
+            var borderRight = this.border.map.create(this.worldWidth, 0);
 
             borderTop.body.immovable = true;
             borderLeft.body.immovable = true;
             borderBottom.body.immovable = true;
             borderRight.body.immovable = true;
 
-            borderTop.scale.set(Config.WORLD_WIDTH, 0);
-            borderLeft.scale.set(0, Config.WORLD_HEIGHT);
-            borderBottom.scale.set(Config.WORLD_WIDTH, 0);
-            borderRight.scale.set(0, Config.WORLD_HEIGHT);
+            borderTop.scale.set(this.worldWidth, 0);
+            borderLeft.scale.set(0, this.worldHeight);
+            borderBottom.scale.set(this.worldWidth, 0);
+            borderRight.scale.set(0, this.worldHeight);
         },
         update: function() {
-            // Handle player movements
-            // Initialize acceleration to zero
-            this.player.body.acceleration.set(0);
-
-            // Do this for every arrow/WASD key
-            if(this.cursor.left.isDown || this.cursor.A.isDown) {
-                // If the velocity is in the opposite direction (i.e. a reverse key, like up then down quickly)
-                // Lerp the velocity back towards zero more quickly than if using acceleration alone.
-                if(this.player.body.velocity.x > 0) {
-                    this.player.body.velocity.x -= this.player.body.velocity.x * Config.PLAYER_REVERSE_DAMP_LERP;
-                    console.log("OpLeft");
-                }
-
-                // Set the acceleration in the left direction
-                this.player.body.acceleration.x -= Config.PLAYER_ACCELERATION;
-            }
-            if(this.cursor.right.isDown || this.cursor.D.isDown) {
-                if(this.player.body.velocity.x < 0) {
-                    this.player.body.velocity.x -= this.player.body.velocity.x * Config.PLAYER_REVERSE_DAMP_LERP;
-                    console.log("OpRight");
-                }
-
-                this.player.body.acceleration.x += Config.PLAYER_ACCELERATION;
-            }
-            if(this.cursor.up.isDown || this.cursor.W.isDown) {
-                if(this.player.body.velocity.y > 0) {
-                    this.player.body.velocity.y -= this.player.body.velocity.y * Config.PLAYER_REVERSE_DAMP_LERP;
-                    console.log("OpUp");
-                }
-
-                this.player.body.acceleration.y -= Config.PLAYER_ACCELERATION;
-            }
-            if(this.cursor.down.isDown || this.cursor.S.isDown) {
-                if(this.player.body.velocity.y < 0) {
-                    this.player.body.velocity.y -= this.player.body.velocity.y * Config.PLAYER_REVERSE_DAMP_LERP;
-                    console.log("OpDown");
-                }
-
-                this.player.body.acceleration.y += Config.PLAYER_ACCELERATION;
-            }
-
-            // Handle player rotation
-            // Point it towards the mouse pointer
-            this.player.rotation = game.physics.arcade.angleToPointer(this.player);
-
             // Handle the background movement
             this.background.tilePosition.set(-game.camera.x, -game.camera.y);
 
-            // Handle the camera movement
-            // Make the camera go towards the pointer a bit
-            var angle = game.physics.arcade.angleToPointer(this.player);
-            var pointerDistance = game.physics.arcade.distanceToPointer(this.player);
-
-            // Wander is the proportional to how far the pointer is from the player.
-            // In case I forget, this is basically CAMERA_WANDER_DISTANCE * (pointerDistance / (GAME_WIDTH / 2))
-            // But there is some redundancy in the calculations, so I simplified it.
-            var wander = Config.CAMERA_WANDER_DISTANCE * pointerDistance * 2;
-            var wanderX = (Math.cos(angle) * wander) / Config.GAME_WIDTH;
-            var wanderY = (Math.sin(angle) * wander) / Config.GAME_HEIGHT;
-
-            var x = this.player.body.x + wanderX;
-            var y = this.player.body.y + wanderY;
-
-            // Camera motion uses lerp so it is smoother
-            this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
-            this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
-            game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
-
             // Handle border collisions
-            game.physics.arcade.collide(this.player, this.borders);
+            game.physics.arcade.collide(this.player, this.border.map);
         },
         render: function() {
             // Some debug text...

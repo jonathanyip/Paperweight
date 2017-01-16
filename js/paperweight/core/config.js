@@ -1,15 +1,17 @@
-/*
- * core/config.js
+/**
  * Paperweight config variables
+ * @module core/config
  */
 define({
     // Game setting values
     GAME_WIDTH: 1280, // Canvas Width
     GAME_HEIGHT: 720, // Canvas Height
 
+    // Map settings
+    MAP_WIDTH: 10000,  // Map width
+    MAP_HEIGHT: 10000, // Map height
+
     // World settings
-    WORLD_WIDTH: 5000,  // World Width
-    WORLD_HEIGHT: 5000, // World Height
     WORLD_PADDING: 750,  // The padding that the world has. It's added on to the width/height.
 
     // Camera setting values

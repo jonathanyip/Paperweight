@@ -1,5 +1,5 @@
 /*
- * paperweight.js
+ * Paperweight!
  * The game starts here! Nice!
  */
 
@@ -11,12 +11,12 @@ requirejs.config({
     }
 });
 
-// Load the game states and what not
-require(["core/game", "stages/boot", 'stages/world'], function(game, Boot, World) {
+// Load the game states and what not.
+require(["core/game", "stages/boot", "stages/map"], function(game, Boot, Map) {
     "use strict";
 
     game.state.add("Boot", Boot);
-    game.state.add("World", World);
+    game.state.add("Map", Map);
 
     game.state.start("Boot");
 });

@@ -6,5 +6,6 @@ I'm not exactly sure what it's going to be about yet (yup, no idea at all), so s
 
 ### Acknowledgements
 
-* http://www.fuzzimo.com/ - For the background paper texture.
+* Gjermund Gustavsen @ [Subtle Patterns](https://www.subtlepatterns.com/) - For the lined background paper texture.
+* [Fuzzimo](https://www.subtlepatterns.com/) - For the fuzzy-brown background paper texture.
 * lewster32 (on the [Html5gamedevs Forums](http://www.html5gamedevs.com/)) - For the advice on the TileSprite found [here](http://www.html5gamedevs.com/topic/8356-simple-background-image-question/), and the awesome lerp camera motion found [here](http://jsfiddle.net/lewster32/5a866/).
