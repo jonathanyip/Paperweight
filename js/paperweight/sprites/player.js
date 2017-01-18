@@ -1,17 +1,18 @@
-/**
+/*
+ * sprites/player.js
  * Controls player movement, rotation, and the camera follow.
- * @module sprites/player
- *
- * @param {number} x - The x coordinate of the sprite.
- * @param {number} y - The y coordinate of the sprite.
- * @param {string} key - The image used as the texture for the sprite.
  */
 define(["core/game", "core/state", "core/config"], function(game, State, Config) {
     "use strict";
 
-    var Player = function(x, y, key) {
+    /*
+     * Create a new Player!
+     * @param {number} x - The x coordinate of the sprite.
+     * @param {number} y - The y coordinate of the sprite.
+     */
+    var Player = function(x, y) {
         // Create the player
-        Phaser.Sprite.call(this, game, x, y, key);
+        Phaser.Sprite.call(this, game, x, y, "player");
 
         // Set some player properties
         game.physics.arcade.enable(this);
@@ -27,13 +28,26 @@ define(["core/game", "core/state", "core/config"], function(game, State, Config)
 
         // Setup the camera position
         this.cameraPos = new Phaser.Point(this.body.x, this.body.y);
+
+        // Setup bullet group.
+        this.bullets = game.add.group();
+        this.bullets.enableBody = true;
+        this.bullets.createMultiple(30, "bullet");
+        this.bullets.setAll("anchor.x", 0.5);
+        this.bullets.setAll("anchor.y", 0.5);
+
+        this.bulletTime = game.time.now;
     };
 
-    // Extend Phaser.Sprite
+    /*
+     * Inherit from the Phaser.Sprite object
+     */
     Player.prototype = Object.create(Phaser.Sprite.prototype);
     Player.prototype.constructor = Player;
 
-    // Runs every update loop
+    /*
+     * Runs every update loop, and updates the camera position.
+     */
     Player.prototype.update = function() {
         // Initialize acceleration to zero
         this.body.acceleration.set(0);
@@ -94,6 +108,29 @@ define(["core/game", "core/state", "core/config"], function(game, State, Config)
         this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
         this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
         game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
+
+        // Handle the bullets.
+        if(game.input.activePointer.isDown) {
+            this.fire();
+        }
+    };
+
+    /*
+     * Fires some bullets!
+     */
+    Player.prototype.fire = function() {
+        // If the delay is too small, don't fire a bullet.
+        if(game.time.now - this.bulletTime < Config.PLAYER_FIRE_RATE) return;
+
+        // If we have no more bullets to shoot, don't fire a bullet.
+        if(this.bullets.countDead() <= 0) return;
+
+        this.bulletTime = game.time.now;
+
+        var bullet = this.bullets.getFirstDead();
+        bullet.reset(this.x, this.y);
+        bullet.rotation = game.physics.arcade.angleToPointer(this);
+        game.physics.arcade.moveToPointer(bullet, 300);
     };
 
     return Player;

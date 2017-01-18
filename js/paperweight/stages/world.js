@@ -1,23 +1,24 @@
-/**
+/*
+ * stages/world.js
  * Does everything necessary for ordinary game functions.
- * i.e. Manages player movement, cameras, collisions, borders, etc...
- *
- * @module stages/world
- *
- * @param {number} width - Width of the world.
- * @param {number} height - Height of the world.
- * @param {number} x - Starting x position of the player
- * @param {number} y - Starting y position of the player
+ * (i.e. Manages player movement, cameras, collisions, borders, etc...)
  */
 define(["core/game", "sprites/player", "core/config"], function(game, Player, Config) {
     "use strict";
 
+    /*
+     * Create a new instance of World (though, should be an abstract class)
+     * @param {number} width - Width of the world.
+     * @param {number} height - Height of the world.
+     * @param {number} x - Starting x position of the player
+     * @param {number} y - Starting y position of the player
+     */
     var World = function(width, height, x, y) {
         this.worldWidth = width;
         this.worldHeight = height;
 
-        this.initialPlayerX = x;
-        this.initialPlayerY = y;
+        this.initialX = x;
+        this.initialY = y;
 
         this.background = null;
         this.border = {
@@ -25,26 +26,11 @@ define(["core/game", "sprites/player", "core/config"], function(game, Player, Co
             map: null
         };
 
-        this.bodies = null;
-        this.bullets = null;
+        this.enemies = null;
     };
 
     World.prototype = {
-        preload: function() {
-            // Load background images/sprites
-            game.load.image("background", "resources/background/paper.jpg");
-
-            game.load.image("borderHorizontal", "resources/background/borderHorizontal.png");
-            game.load.image("borderVertical", "resources/background/borderVertical.png");
-            game.load.image("borderCorner", "resources/background/borderCorner.png");
-
-            game.load.image("player", "resources/sprites/star.png");
-        },
         create: function() {
-            // Create the collision groups
-            this.bodies = game.add.group();
-            this.bullets = game.add.group();
-
             // Set up the world size
             game.world.setBounds(-Config.WORLD_PADDING, -Config.WORLD_PADDING, this.worldWidth + (2 * Config.WORLD_PADDING), this.worldHeight + (2 * Config.WORLD_PADDING));
 
@@ -53,9 +39,34 @@ define(["core/game", "sprites/player", "core/config"], function(game, Player, Co
             this.background.fixedToCamera = true;
 
             // Create a player
-            this.player = new Player(this.initialPlayerX, this.initialPlayerY, "player");
-            game.add.existing(this.player);
+            this.player = game.add.existing(new Player(this.initialX, this.initialY, "player"));
 
+            // Setup the borders
+            this.createBorders();
+
+            // Create a group to hold the enemies!
+            this.enemies = game.add.group();
+        },
+        update: function() {
+            // Handle the background movement
+            this.background.tilePosition.set(-game.camera.x, -game.camera.y);
+
+            // Handle border collisions
+            game.physics.arcade.collide(this.player, this.border.map);
+        },
+        render: function() {
+            // Some debug text...
+            game.debug.text("Position: x=" + this.player.body.x + "; y=" + this.player.body.y, 32, 32);
+            game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 64);
+            game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 96);
+            game.debug.text("Angle to pointer: " + game.physics.arcade.angleToPointer(this.player), 32, 128);
+            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player), 32, 160);
+        },
+        /*
+         * Creates the borders on the map:
+         * Both the physics-based ones and the actual images.
+         */
+        createBorders: function() {
             // Setup the border sprites (the actual images showing up the border)
             var borderTop = game.add.tileSprite(0, -100, this.worldWidth, 100, "borderHorizontal");
             var borderLeft = game.add.tileSprite(-100, 0, 100, this.worldHeight, "borderVertical");
@@ -95,21 +106,6 @@ define(["core/game", "sprites/player", "core/config"], function(game, Player, Co
             borderLeft.scale.set(0, this.worldHeight);
             borderBottom.scale.set(this.worldWidth, 0);
             borderRight.scale.set(0, this.worldHeight);
-        },
-        update: function() {
-            // Handle the background movement
-            this.background.tilePosition.set(-game.camera.x, -game.camera.y);
-
-            // Handle border collisions
-            game.physics.arcade.collide(this.player, this.border.map);
-        },
-        render: function() {
-            // Some debug text...
-            game.debug.text("Position: x=" + this.player.body.x + "; y=" + this.player.body.y, 32, 32);
-            game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 64);
-            game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 96);
-            game.debug.text("Angle to pointer: " + game.physics.arcade.angleToPointer(this.player), 32, 128);
-            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player), 32, 160);
         }
     };
 

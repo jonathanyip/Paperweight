@@ -1,10 +1,9 @@
-/**
+/*
+ * core/game.js
  * A reference to the Game instance
  *
  * Note: We are using the global Phaser object,
  * as it doesn't seem completely compatiable with RequireJS
- *
- * @module core/game
  */
 define(["core/config", "lib/phaser"], function(Config) {
     "use strict";

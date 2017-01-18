@@ -1,15 +1,20 @@
-/**
+/*
+ * stages/map.js
  * Does the world map!
- * @module stages/map
  */
 define(["core/game", "stages/world", "core/config"], function(game, World, Config) {
     "use strict";
 
+    /*
+     * Creates a new instance of Map.
+     */
     var Map = function() {
         World.call(this, Config.MAP_WIDTH, Config.MAP_HEIGHT, 250, 250);
     };
 
-    // Extend World!
+    /*
+     * Extend World!
+     */
     Map.prototype = Object.create(World.prototype);
     Map.prototype.constructor = Map;
 
