@@ -2,7 +2,7 @@
  * sprites/player.js
  * Controls player movement, rotation, and the camera follow.
  */
-define(["core/game", "core/state", "core/config"], function(game, State, Config) {
+define(["core/game", "core/state", "core/utils", "core/config"], function(game, State, Utils, Config) {
     "use strict";
 
     /*
@@ -39,99 +39,100 @@ define(["core/game", "core/state", "core/config"], function(game, State, Config)
         this.bulletTime = game.time.now;
     };
 
-    /*
-     * Inherit from the Phaser.Sprite object
-     */
-    Player.prototype = Object.create(Phaser.Sprite.prototype);
-    Player.prototype.constructor = Player;
+    Player.prototype = {
+        /*
+         * Runs every update loop and updates the camera position.
+         */
+        update: function() {
+            // Initialize acceleration to zero
+            this.body.acceleration.set(0);
 
-    /*
-     * Runs every update loop, and updates the camera position.
-     */
-    Player.prototype.update = function() {
-        // Initialize acceleration to zero
-        this.body.acceleration.set(0);
+            // Respond to the arrow/WASD keys.
+            if(this.cursor.left.isDown || this.cursor.A.isDown) {
+                // If the velocity is in the opposite direction (i.e. a reverse key, like up then down quickly)
+                // Lerp the velocity back towards zero more quickly than if using acceleration alone.
+                if(this.body.velocity.x > 0) {
+                    this.body.velocity.x -= this.body.velocity.x * Config.PLAYER_REVERSE_DAMP_LERP;
+                }
 
-        // Respond to the arrow/WASD keys.
-        if(this.cursor.left.isDown || this.cursor.A.isDown) {
-            // If the velocity is in the opposite direction (i.e. a reverse key, like up then down quickly)
-            // Lerp the velocity back towards zero more quickly than if using acceleration alone.
-            if(this.body.velocity.x > 0) {
-                this.body.velocity.x -= this.body.velocity.x * Config.PLAYER_REVERSE_DAMP_LERP;
+                // Set the acceleration in the left direction
+                this.body.acceleration.x -= Config.PLAYER_ACCELERATION;
+            }
+            if(this.cursor.right.isDown || this.cursor.D.isDown) {
+                if(this.body.velocity.x < 0) {
+                    this.body.velocity.x -= this.body.velocity.x * Config.PLAYER_REVERSE_DAMP_LERP;
+                }
+
+                this.body.acceleration.x += Config.PLAYER_ACCELERATION;
+            }
+            if(this.cursor.up.isDown || this.cursor.W.isDown) {
+                if(this.body.velocity.y > 0) {
+                    this.body.velocity.y -= this.body.velocity.y * Config.PLAYER_REVERSE_DAMP_LERP;
+                }
+
+                this.body.acceleration.y -= Config.PLAYER_ACCELERATION;
+            }
+            if(this.cursor.down.isDown || this.cursor.S.isDown) {
+                if(this.body.velocity.y < 0) {
+                    this.body.velocity.y -= this.body.velocity.y * Config.PLAYER_REVERSE_DAMP_LERP;
+                }
+
+                this.body.acceleration.y += Config.PLAYER_ACCELERATION;
             }
 
-            // Set the acceleration in the left direction
-            this.body.acceleration.x -= Config.PLAYER_ACCELERATION;
-        }
-        if(this.cursor.right.isDown || this.cursor.D.isDown) {
-            if(this.body.velocity.x < 0) {
-                this.body.velocity.x -= this.body.velocity.x * Config.PLAYER_REVERSE_DAMP_LERP;
+            // Handle player rotation
+            // Point it towards the mouse pointer
+            this.rotation = game.physics.arcade.angleToPointer(this);
+
+            // Handle the camera movement
+            // Make the camera go towards the pointer a bit
+            var angle = game.physics.arcade.angleToPointer(this);
+            var pointerDistance = game.physics.arcade.distanceToPointer(this);
+
+            // Wander is the proportional to how far the pointer is from the player.
+            // In case I forget, this is basically CAMERA_WANDER_DISTANCE * (pointerDistance / (GAME_WIDTH / 2))
+            // But there is some redundancy in the calculations, so I simplified it.
+            var wander = Config.CAMERA_WANDER_DISTANCE * pointerDistance * 2;
+            var wanderX = (Math.cos(angle) * wander) / Config.GAME_WIDTH;
+            var wanderY = (Math.sin(angle) * wander) / Config.GAME_HEIGHT;
+
+            var x = this.body.x + wanderX;
+            var y = this.body.y + wanderY;
+
+            // Camera motion uses lerp so it is smoother
+            this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
+            this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
+            game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
+
+            // Handle the bullets.
+            if(game.input.activePointer.isDown) {
+                this.fire();
             }
+        },
 
-            this.body.acceleration.x += Config.PLAYER_ACCELERATION;
-        }
-        if(this.cursor.up.isDown || this.cursor.W.isDown) {
-            if(this.body.velocity.y > 0) {
-                this.body.velocity.y -= this.body.velocity.y * Config.PLAYER_REVERSE_DAMP_LERP;
-            }
+        /*
+         * Fires some bullets!
+         */
+        fire: function() {
+            // If the delay is too small, don't fire a bullet.
+            if(game.time.now - this.bulletTime < Config.PLAYER_FIRE_RATE) return;
 
-            this.body.acceleration.y -= Config.PLAYER_ACCELERATION;
-        }
-        if(this.cursor.down.isDown || this.cursor.S.isDown) {
-            if(this.body.velocity.y < 0) {
-                this.body.velocity.y -= this.body.velocity.y * Config.PLAYER_REVERSE_DAMP_LERP;
-            }
+            // If we have no more bullets to shoot, don't fire a bullet.
+            if(this.bullets.countDead() <= 0) return;
 
-            this.body.acceleration.y += Config.PLAYER_ACCELERATION;
-        }
+            this.bulletTime = game.time.now;
 
-        // Handle player rotation
-        // Point it towards the mouse pointer
-        this.rotation = game.physics.arcade.angleToPointer(this);
-
-        // Handle the camera movement
-        // Make the camera go towards the pointer a bit
-        var angle = game.physics.arcade.angleToPointer(this);
-        var pointerDistance = game.physics.arcade.distanceToPointer(this);
-
-        // Wander is the proportional to how far the pointer is from the player.
-        // In case I forget, this is basically CAMERA_WANDER_DISTANCE * (pointerDistance / (GAME_WIDTH / 2))
-        // But there is some redundancy in the calculations, so I simplified it.
-        var wander = Config.CAMERA_WANDER_DISTANCE * pointerDistance * 2;
-        var wanderX = (Math.cos(angle) * wander) / Config.GAME_WIDTH;
-        var wanderY = (Math.sin(angle) * wander) / Config.GAME_HEIGHT;
-
-        var x = this.body.x + wanderX;
-        var y = this.body.y + wanderY;
-
-        // Camera motion uses lerp so it is smoother
-        this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
-        this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
-        game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
-
-        // Handle the bullets.
-        if(game.input.activePointer.isDown) {
-            this.fire();
+            var bullet = this.bullets.getFirstDead();
+            bullet.reset(this.x, this.y);
+            bullet.rotation = game.physics.arcade.angleToPointer(this);
+            game.physics.arcade.moveToPointer(bullet, 300);
         }
     };
 
     /*
-     * Fires some bullets!
+     * Extend Phaser.Sprite
      */
-    Player.prototype.fire = function() {
-        // If the delay is too small, don't fire a bullet.
-        if(game.time.now - this.bulletTime < Config.PLAYER_FIRE_RATE) return;
-
-        // If we have no more bullets to shoot, don't fire a bullet.
-        if(this.bullets.countDead() <= 0) return;
-
-        this.bulletTime = game.time.now;
-
-        var bullet = this.bullets.getFirstDead();
-        bullet.reset(this.x, this.y);
-        bullet.rotation = game.physics.arcade.angleToPointer(this);
-        game.physics.arcade.moveToPointer(bullet, 300);
-    };
+    Utils.extendSprite(Player);
 
     return Player;
 });
