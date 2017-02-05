@@ -12,13 +12,24 @@ define(["core/game", "core/state", "core/utils", "core/config"], function(game, 
      */
     var Player = function(x, y) {
         // Create the player
-        Phaser.Sprite.call(this, game, x, y, "player");
+        Phaser.Sprite.call(this, game, x, y);
 
         // Set some player properties
         game.physics.arcade.enable(this);
         this.body.bounce.set(Config.PLAYER_BOUNCE);
         this.body.drag.set(Config.PLAYER_DRAG);
         this.body.maxVelocity.set(Config.PLAYER_MAX_VELOCITY);
+        this.anchor.set(0.5, 0.5);
+
+        // Create the tank
+        this.tank = game.make.sprite(0, 0, "tank");
+        this.tank.anchor.set(0.5, 0.5);
+        this.addChild(this.tank);
+
+        // Create the turret
+        this.turret = game.make.sprite(0, 0, "turret");
+        this.turret.anchor.set(0.5, 0.5);
+        this.addChild(this.turret);
 
         // Add arrow keys and WASD
         this.cursor = game.input.keyboard.addKeys({
@@ -81,8 +92,15 @@ define(["core/game", "core/state", "core/utils", "core/config"], function(game, 
             }
 
             // Handle player rotation
+            // Point it towards the direction we're moving.
+            if(this.body.velocity.y != 0 || this.body.velocity.x != 0) {
+                var tankRot = Math.atan2(-1 * this.body.velocity.y, -1 * this.body.velocity.x);
+                this.tank.rotation += (tankRot - this.tank.rotation) * Config.CAMERA_MOTION_LERP;
+            }
+
+            // Handle turret rotation
             // Point it towards the mouse pointer
-            this.rotation = game.physics.arcade.angleToPointer(this);
+            this.turret.rotation = game.physics.arcade.angleToPointer(this);
 
             // Handle the camera movement
             // Make the camera go towards the pointer a bit

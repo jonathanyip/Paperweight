@@ -18,7 +18,8 @@ define(["core/game", "core/config"], function(game, Config) {
             game.load.image("borderVertical", "resources/background/borderVertical.png");
             game.load.image("borderCorner", "resources/background/borderCorner.png");
 
-            game.load.image("player", "resources/sprites/star.png");
+            game.load.image("tank", "resources/sprites/tank.png");
+            game.load.image("turret", "resources/sprites/turret.png");
             game.load.image("bullet", "resources/sprites/bullet.png");
         },
 
