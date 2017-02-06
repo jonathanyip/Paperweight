@@ -27,6 +27,15 @@ define({
     CAMERA_WANDER_DISTANCE: 50, // How far the camera can go towards the pointer
 
     /*
+     * Tank physics values
+     */
+    TANK_BOUNCE: 0.5,
+    TANK_MAX_VELOCITY: 350,
+    TANK_ACCELERATION: 350,
+    TANK_DRAG: 350,
+    TANK_ROTATION_LERP: 0.1,
+
+    /*
      * Player physics values
      */
     PLAYER_MAX_VELOCITY: 350,      // Max velocity that the player can move

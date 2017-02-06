@@ -3,7 +3,7 @@
  * Does everything necessary for ordinary game functions.
  * (i.e. Manages player movement, cameras, collisions, borders, etc...)
  */
-define(["core/game", "sprites/player", "core/config"], function(game, Player, Config) {
+define(["core/game", "core/config", "objects/player"], function(game, Config, Player) {
     "use strict";
 
     /*
@@ -39,7 +39,7 @@ define(["core/game", "sprites/player", "core/config"], function(game, Player, Co
             this.background.fixedToCamera = true;
 
             // Create a player
-            this.player = game.add.existing(new Player(this.initialX, this.initialY, "player"));
+            this.player = new Player(this.initialX, this.initialY);
 
             // Setup the borders
             this.createBorders();
@@ -51,16 +51,19 @@ define(["core/game", "sprites/player", "core/config"], function(game, Player, Co
             // Handle the background movement
             this.background.tilePosition.set(-game.camera.x, -game.camera.y);
 
+            // Update Player
+            this.player.update();
+
             // Handle border collisions
-            game.physics.arcade.collide(this.player, this.border.map);
+            //game.physics.arcade.collide(this.player, this.border.map);
         },
         render: function() {
             // Some debug text...
-            game.debug.text("Position: x=" + this.player.body.x + "; y=" + this.player.body.y, 32, 32);
-            game.debug.text("Acceleration: x=" + this.player.body.acceleration.x + "; y=" + this.player.body.acceleration.y, 32, 64);
-            game.debug.text("Velocity: x=" + this.player.body.velocity.x + "; y=" + this.player.body.velocity.y, 32, 96);
-            game.debug.text("Angle to pointer: " + game.physics.arcade.angleToPointer(this.player), 32, 128);
-            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player), 32, 160);
+            game.debug.text("Position: x=" + this.player.tank.body.x + "; y=" + this.player.tank.body.y, 32, 32);
+            game.debug.text("Acceleration: x=" + this.player.tank.body.acceleration.x + "; y=" + this.player.tank.body.acceleration.y, 32, 64);
+            game.debug.text("Velocity: x=" + this.player.tank.body.velocity.x + "; y=" + this.player.tank.body.velocity.y, 32, 96);
+            game.debug.text("Tank Angle: " + this.player.tank.body.angle, 32, 128);
+            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player.tank), 32, 160);
         },
         /*
          * Creates the borders on the map:
