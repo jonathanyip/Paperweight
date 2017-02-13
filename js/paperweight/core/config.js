@@ -27,21 +27,13 @@ define({
     CAMERA_WANDER_DISTANCE: 50, // How far the camera can go towards the pointer
 
     /*
-     * Tank physics values
-     */
-    TANK_BOUNCE: 0.5,
-    TANK_MAX_VELOCITY: 350,
-    TANK_ACCELERATION: 350,
-    TANK_DRAG: 350,
-    TANK_ROTATION_LERP: 0.1,
-
-    /*
      * Player physics values
      */
     PLAYER_MAX_VELOCITY: 350,      // Max velocity that the player can move
     PLAYER_ACCELERATION: 350,      // Acceleration that the player has
     PLAYER_DRAG: 350,              // How fast the player slows down when not accelerating
     PLAYER_REVERSE_DAMP_LERP: 0.3, // Lerp value for dampening of reverse motion (i.e. pressing up then down quickly)
+    PLAYER_ROTATION_LERP: 0.10,     // Lerp value for the dampening of the rotation
     PLAYER_BOUNCE: 0.5,            // How much energy in conserved when hitting a collider
     PLAYER_FIRE_RATE: 100          // Fire rate in milliseconds per bullet
 });

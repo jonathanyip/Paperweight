@@ -22,7 +22,6 @@ define(["core/game", "core/utils", "core/config", "stages/world"], function(game
      */
     Map.prototype.render = function() {
         World.prototype.render.call(this);
-        game.debug.text("Extended!", 32, 192);
     };
 
     return Map;

@@ -59,11 +59,11 @@ define(["core/game", "core/config", "objects/player"], function(game, Config, Pl
         },
         render: function() {
             // Some debug text...
-            game.debug.text("Position: x=" + this.player.tank.body.x + "; y=" + this.player.tank.body.y, 32, 32);
-            game.debug.text("Acceleration: x=" + this.player.tank.body.acceleration.x + "; y=" + this.player.tank.body.acceleration.y, 32, 64);
-            game.debug.text("Velocity: x=" + this.player.tank.body.velocity.x + "; y=" + this.player.tank.body.velocity.y, 32, 96);
-            game.debug.text("Tank Angle: " + this.player.tank.body.angle, 32, 128);
-            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player.tank), 32, 160);
+            game.debug.text("Position: x=" + this.player.sprite.body.x + "; y=" + this.player.sprite.body.y, 32, 32);
+            game.debug.text("Acceleration: x=" + this.player.sprite.body.acceleration.x + "; y=" + this.player.sprite.body.acceleration.y, 32, 64);
+            game.debug.text("Velocity: x=" + this.player.sprite.body.velocity.x + "; y=" + this.player.sprite.body.velocity.y, 32, 96);
+            game.debug.text("Tank Angle: " + this.player.tank.angle, 32, 128);
+            game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player.sprite), 32, 160);
         },
         /*
          * Creates the borders on the map:

@@ -20,7 +20,7 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
         });
 
         // Setup the camera position
-        this.cameraPos = new Phaser.Point(this.tank.body.x, this.tank.body.y);
+        this.cameraPos = new Phaser.Point(this.sprite.body.x, this.sprite.body.y);
 
         // Setup bullet group.
         this.bullets = game.add.group();
@@ -58,12 +58,12 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
         this.moveTank(tankPoint);
 
         // Point the turret towards the mouse pointer
-        this.rotateTurret(game.physics.arcade.angleToPointer(this.tank));
+        this.rotateTurret(game.physics.arcade.angleToPointer(this.sprite));
 
         // Handle the camera movement
         // Make the camera go towards the pointer a bit
-        var angle = game.physics.arcade.angleToPointer(this.tank);
-        var pointerDistance = game.physics.arcade.distanceToPointer(this.tank);
+        var angle = game.physics.arcade.angleToPointer(this.sprite);
+        var pointerDistance = game.physics.arcade.distanceToPointer(this.sprite);
 
         // Wander is the proportional to how far the pointer is from the player.
         // In case I forget, this is basically CAMERA_WANDER_DISTANCE * (pointerDistance / (GAME_WIDTH / 2))
@@ -72,8 +72,8 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
         var wanderX = (Math.cos(angle) * wander) / Config.GAME_WIDTH;
         var wanderY = (Math.sin(angle) * wander) / Config.GAME_HEIGHT;
 
-        var x = this.tank.body.x + wanderX;
-        var y = this.tank.body.y + wanderY;
+        var x = this.sprite.body.x + wanderX;
+        var y = this.sprite.body.y + wanderY;
 
         // Camera motion uses lerp so it is smoother
         this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
