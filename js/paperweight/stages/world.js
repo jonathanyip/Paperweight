@@ -25,15 +25,14 @@ define(["core/game", "core/config", "objects/player"], function(game, Config, Pl
             sprites: null,
             map: null
         };
-
-        this.enemies = null;
     };
 
     World.prototype = {
+        preload: function() {
+            game.load.tilemap("tilemap", "resources/tilemaps/default.json", null, Phaser.Tilemap.TILED_JSON);
+            game.load.image("tileset", "resources/sprites/tileset.png");
+        },
         create: function() {
-            // Set up the world size
-            game.world.setBounds(-Config.WORLD_PADDING, -Config.WORLD_PADDING, this.worldWidth + (2 * Config.WORLD_PADDING), this.worldHeight + (2 * Config.WORLD_PADDING));
-
             // Setup the background
             this.background = game.add.tileSprite(0, 0, Config.GAME_WIDTH, Config.GAME_HEIGHT, "background");
             this.background.fixedToCamera = true;
@@ -41,21 +40,25 @@ define(["core/game", "core/config", "objects/player"], function(game, Config, Pl
             // Create a player
             this.player = new Player(this.initialX, this.initialY);
 
-            // Setup the borders
-            this.createBorders();
+            // Setup map
+            this.map = game.add.tilemap("tilemap");
+            this.map.addTilesetImage("tileset", "tileset");
+            this.map.setCollision([1, 2]);
 
-            // Create a group to hold the enemies!
-            this.enemies = game.add.group();
+            // Setup layer
+            this.layer = this.map.createLayer("default");
+
+                        // Set up the world size
+            game.world.setBounds(-Config.WORLD_PADDING, -Config.WORLD_PADDING, this.map.widthInPixels + (2 * Config.WORLD_PADDING), this.map.heightInPixels + (2 * Config.WORLD_PADDING));
         },
         update: function() {
             // Handle the background movement
             this.background.tilePosition.set(-game.camera.x, -game.camera.y);
 
+            game.physics.arcade.collide(this.player.sprite, this.layer);
+
             // Update Player
             this.player.update();
-
-            // Handle border collisions
-            //game.physics.arcade.collide(this.player, this.border.map);
         },
         render: function() {
             // Some debug text...
@@ -64,51 +67,6 @@ define(["core/game", "core/config", "objects/player"], function(game, Config, Pl
             game.debug.text("Velocity: x=" + this.player.sprite.body.velocity.x + "; y=" + this.player.sprite.body.velocity.y, 32, 96);
             game.debug.text("Tank Angle: " + this.player.tank.angle, 32, 128);
             game.debug.text("Distance to pointer: " + game.physics.arcade.distanceToPointer(this.player.sprite), 32, 160);
-        },
-        /*
-         * Creates the borders on the map:
-         * Both the physics-based ones and the actual images.
-         */
-        createBorders: function() {
-            // Setup the border sprites (the actual images showing up the border)
-            var borderTop = game.add.tileSprite(0, -100, this.worldWidth, 100, "borderHorizontal");
-            var borderLeft = game.add.tileSprite(-100, 0, 100, this.worldHeight, "borderVertical");
-            var borderBottom = game.add.tileSprite(0, this.worldHeight, this.worldWidth, 100, "borderHorizontal");
-            var borderRight = game.add.tileSprite(this.worldWidth, 0, 100, this.worldHeight, "borderVertical");
-
-            var borderTopLeft = game.add.sprite(-100, -100, "borderCorner");
-            var borderBottomLeft = game.add.sprite(-100, this.worldHeight, "borderCorner");
-            var borderTopRight = game.add.sprite(this.worldWidth, -100, "borderCorner");
-            var borderBottomRight = game.add.sprite(this.worldWidth, this.worldHeight, "borderCorner");
-
-            this.border.sprites = game.add.group();
-            this.border.sprites.add(borderTop);
-            this.border.sprites.add(borderLeft);
-            this.border.sprites.add(borderBottom);
-            this.border.sprites.add(borderRight);
-            this.border.sprites.add(borderTopLeft);
-            this.border.sprites.add(borderBottomLeft);
-            this.border.sprites.add(borderTopRight);
-            this.border.sprites.add(borderBottomRight);
-
-            // Set up the actual collision border (it's invisible!)
-            this.border.map = game.add.group();
-            this.border.map.enableBody = true;
-
-            var borderTop = this.border.map.create(0, 0);
-            var borderLeft = this.border.map.create(0, 0);
-            var borderBottom = this.border.map.create(0, this.worldHeight);
-            var borderRight = this.border.map.create(this.worldWidth, 0);
-
-            borderTop.body.immovable = true;
-            borderLeft.body.immovable = true;
-            borderBottom.body.immovable = true;
-            borderRight.body.immovable = true;
-
-            borderTop.scale.set(this.worldWidth, 0);
-            borderLeft.scale.set(0, this.worldHeight);
-            borderBottom.scale.set(this.worldWidth, 0);
-            borderRight.scale.set(0, this.worldHeight);
         }
     };
 

@@ -1,5 +1,5 @@
 /*
- * sprites/tank.js
+ * objects/tank.js
  * Controls the tank and turret sprites.
  */
 define(["core/game", "core/Config"], function(game, Config) {

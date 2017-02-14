@@ -1,5 +1,5 @@
 /*
- * sprites/player.js
+ * objects/player.js
  * Controls player movement, rotation, and the camera follow.
  */
 define(["core/game", "core/utils", "core/config", "objects/tank"], function(game, Utils, Config, Tank) {
@@ -21,15 +21,6 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
 
         // Setup the camera position
         this.cameraPos = new Phaser.Point(this.sprite.body.x, this.sprite.body.y);
-
-        // Setup bullet group.
-        this.bullets = game.add.group();
-        this.bullets.enableBody = true;
-        this.bullets.createMultiple(30, "bullet");
-        this.bullets.setAll("anchor.x", 0.5);
-        this.bullets.setAll("anchor.y", 0.5);
-
-        this.bulletTime = game.time.now;
     };
 
     Utils.objects.extend(Player, Tank);
@@ -74,34 +65,11 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
 
         var x = this.sprite.body.x + wanderX;
         var y = this.sprite.body.y + wanderY;
-
+        
         // Camera motion uses lerp so it is smoother
         this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
         this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
         game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
-
-        // Handle the bullets.
-        if(game.input.activePointer.isDown) {
-            this.fire();
-        }
-    };
-
-    /*
-     * Fires some bullets!
-     */
-    Player.prototype.fire = function() {
-        // If the delay is too small, don't fire a bullet.
-        if(game.time.now - this.bulletTime < Config.PLAYER_FIRE_RATE) return;
-
-        // If we have no more bullets to shoot, don't fire a bullet.
-        if(this.bullets.countDead() <= 0) return;
-
-        this.bulletTime = game.time.now;
-
-        var bullet = this.bullets.getFirstDead();
-        bullet.reset(this.x, this.y);
-        bullet.rotation = game.physics.arcade.angleToPointer(this);
-        game.physics.arcade.moveToPointer(bullet, 300);
     };
 
     return Player;
