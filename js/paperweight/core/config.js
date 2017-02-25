@@ -33,7 +33,16 @@ define({
     PLAYER_ACCELERATION: 350,      // Acceleration that the player has
     PLAYER_DRAG: 350,              // How fast the player slows down when not accelerating
     PLAYER_REVERSE_DAMP_LERP: 0.3, // Lerp value for dampening of reverse motion (i.e. pressing up then down quickly)
-    PLAYER_ROTATION_LERP: 0.10,     // Lerp value for the dampening of the rotation
+    PLAYER_ROTATION_LERP: 0.10,    // Lerp value for the dampening of the rotation
     PLAYER_BOUNCE: 0.5,            // How much energy in conserved when hitting a collider
-    PLAYER_FIRE_RATE: 100          // Fire rate in milliseconds per bullet
+    
+    /*
+     * Shooter values
+     */
+    SHOOTER_FIRE_RATE: 100, // Fire rate in milliseconds per bullet
+
+    /*
+     * Bullet values
+     */
+    BULLET_VELOCITY: 350, // How fast should a bullet move?
 });

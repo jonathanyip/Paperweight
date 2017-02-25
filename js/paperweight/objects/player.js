@@ -2,7 +2,7 @@
  * objects/player.js
  * Controls player movement, rotation, and the camera follow.
  */
-define(["core/game", "core/utils", "core/config", "objects/tank"], function(game, Utils, Config, Tank) {
+define(["core/game", "core/utils", "core/config", "objects/tank", "objects/shooter"], function(game, Utils, Config, Tank, Shooter) {
     "use strict";
 
     /*
@@ -21,6 +21,9 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
 
         // Setup the camera position
         this.cameraPos = new Phaser.Point(this.sprite.body.x, this.sprite.body.y);
+
+        // Create the shooter object
+        this.shooter = new Shooter(this.sprite);
     };
 
     Utils.objects.extend(Player, Tank);
@@ -70,6 +73,11 @@ define(["core/game", "core/utils", "core/config", "objects/tank"], function(game
         this.cameraPos.x += (x - this.cameraPos.x) * Config.CAMERA_MOTION_LERP;
         this.cameraPos.y += (y - this.cameraPos.y) * Config.CAMERA_MOTION_LERP;
         game.camera.focusOnXY(this.cameraPos.x, this.cameraPos.y);
+
+        // Respond to a mouse click by firing
+        if(game.input.activePointer.isDown) {
+            this.shooter.fire(game.physics.arcade.angleToPointer(this.sprite, game.input.activePointer));
+        }
     };
 
     return Player;
