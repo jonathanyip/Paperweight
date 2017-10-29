@@ -2,7 +2,7 @@
  * objects/tank.js
  * Controls the tank and turret sprites.
  */
-define(["core/game", "core/Config"], function(game, Config) {
+define(["core/game", "core/config"], function(game, Config) {
     "use strict";
 
     /*
